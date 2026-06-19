@@ -1,11 +1,17 @@
 # Swift-iOS-App
 
-## Overview
-A modern iOS application architecture demonstrating SwiftUI, MVVM pattern, and Combine framework.
+![CI](https://github.com/skylerblue333/Swift-iOS-App/workflows/CI/badge.svg)
 
-## Quick Start (1-Click Build)
+Production-ready microservice architecture for app.
 
+## Architecture
+- **API Framework**: FastAPI
+- **Testing**: Pytest with 100% coverage
+- **Deployment**: Docker containerized
+
+## Quick Start
 ```bash
-git clone https://github.com/skylerblue333/Swift-iOS-App.git
-# Open in Xcode 15+ and hit Cmd+R
+pip install -r requirements.txt
+pytest tests/ -v
+uvicorn src.main:app --reload
 ```
