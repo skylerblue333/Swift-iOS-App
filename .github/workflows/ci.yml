@@ -1,9 +1,19 @@
-name: CI
+name: swift-mobile-core-ci
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
-  build:
+  verify:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
-      - run: swift build
-      - run: swift test
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Resolve package
+        run: swift package resolve
+      - name: Debug build
+        run: swift build
+      - name: Tests
+        run: swift test
+      - name: Release build
+        run: swift build -c release
