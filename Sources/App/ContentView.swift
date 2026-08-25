@@ -63,7 +63,7 @@ public final class TaskStore: ObservableObject {
         tasks.remove(atOffsets: offsets)
     }
 
-    public var completedCount: Int { tasks.lazy.filter(\.isCompleted).count }
+    public var completedCount: Int { tasks.lazy.filter { $0.isCompleted }.count }
     public var pendingCount: Int { tasks.count - completedCount }
 
     private func sortTasks() {
