@@ -1,29 +1,51 @@
 import XCTest
 @testable import App
 
+@MainActor
 final class TaskStoreTests: XCTestCase {
-    func testAddTask() {
+    func testAddTaskTrimsAndStores() throws {
         let store = TaskStore()
-        store.addTask("Buy groceries")
-        XCTAssertEqual(store.tasks.count, 1)
-        XCTAssertEqual(store.tasks[0].title, "Buy groceries")
-        XCTAssertFalse(store.tasks[0].isCompleted)
+        let task = try store.addTask("  Buy groceries  ", priority: 3)
+        XCTAssertEqual(task.title, "Buy groceries")
+        XCTAssertEqual(task.priority, 3)
+        XCTAssertFalse(task.isCompleted)
+        XCTAssertEqual(store.pendingCount, 1)
     }
-    
-    func testToggleTask() {
+
+    func testRejectsInvalidInputs() {
         let store = TaskStore()
-        store.addTask("Test task")
-        let task = store.tasks[0]
-        store.toggleTask(task)
-        XCTAssertTrue(store.tasks[0].isCompleted)
+        XCTAssertThrowsError(try store.addTask("   ")) { error in
+            XCTAssertEqual(error as? TaskStoreError, .emptyTitle)
+        }
+        XCTAssertThrowsError(try store.addTask(String(repeating: "a", count: 201))) { error in
+            XCTAssertEqual(error as? TaskStoreError, .titleTooLong)
+        }
+        XCTAssertThrowsError(try store.addTask("Task", priority: 0)) { error in
+            XCTAssertEqual(error as? TaskStoreError, .invalidPriority)
+        }
     }
-    
-    func testCounts() {
+
+    func testToggleMovesCompletedTaskBehindPending() throws {
         let store = TaskStore()
-        store.addTask("Task 1")
-        store.addTask("Task 2")
-        store.toggleTask(store.tasks[0])
+        let high = try store.addTask("High", priority: 5)
+        _ = try store.addTask("Low", priority: 1)
+        store.toggleTask(id: high.id)
+        XCTAssertTrue(store.tasks.last?.isCompleted == true)
         XCTAssertEqual(store.completedCount, 1)
         XCTAssertEqual(store.pendingCount, 1)
+    }
+
+    func testPendingTasksSortByPriority() throws {
+        let store = TaskStore()
+        _ = try store.addTask("Low", priority: 1)
+        _ = try store.addTask("High", priority: 5)
+        XCTAssertEqual(store.tasks.map(\.title), ["High", "Low"])
+    }
+
+    func testDeleteById() throws {
+        let store = TaskStore()
+        let task = try store.addTask("Remove me")
+        store.deleteTask(id: task.id)
+        XCTAssertTrue(store.tasks.isEmpty)
     }
 }
